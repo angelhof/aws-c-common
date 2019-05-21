@@ -57,6 +57,16 @@ struct aws_priority_queue_node {
 
 AWS_EXTERN_C_BEGIN
 
+/* 
+ * Temporary ...
+ */
+AWS_COMMON_API
+void s_swap(
+     struct aws_priority_queue *queue,
+     size_t a,
+     size_t b);
+
+
 /**
  * Initializes a priority queue struct for use. This mode will grow memory automatically (exponential model)
  * Default size is the inital size of the queue

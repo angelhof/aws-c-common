@@ -166,14 +166,16 @@ void aws_priority_queue_init_static(
     AWS_POSTCONDITION(aws_priority_queue_is_valid(queue));
 }
 
-
-static bool s_backpointers_are_valid(const struct aws_array_list *AWS_RESTRICT backpointers) {
+/* Question: What is a better name for that? */
+static bool s_priority_queue_is_ordered(const struct aws_array_list *AWS_RESTRICT backpointers) {
     /* Assuming that backpointers has passed the aws_array_list_is_valid check */
 
     size_t i;
     size_t len = aws_array_list_length(backpointers);
     struct aws_priority_queue_node *backpointer = NULL;
-    
+
+    /* Question: Could this create any problem when used as a
+       precondition in CBMC (because of the loop)? */
     for (i=0; i < len; i++) {
         aws_array_list_get_at(backpointers, &backpointer, i);
         bool valid_backpointer = (!backpointer) || (backpointer->current_index == i);
@@ -185,8 +187,27 @@ static bool s_backpointers_are_valid(const struct aws_array_list *AWS_RESTRICT b
     return true;
 }
 
+// TODO: CBMC Macro
+static bool s_backpointers_are_valid(const struct aws_array_list *AWS_RESTRICT backpointers) {
+    /* Assuming that backpointers has passed the aws_array_list_is_valid check */
 
-/* TODO: Separate this into validity and semantic checks */                            
+    size_t i;
+    size_t len = aws_array_list_length(backpointers);
+    struct aws_priority_queue_node *backpointer = NULL;
+
+    /* Question: Could this create any problem when used as a
+       precondition in CBMC (because of the loop)? */
+    for (i=0; i < len; i++) {
+        aws_array_list_get_at(backpointers, &backpointer, i);
+        bool valid_backpointer = (!backpointer) || (backpointer->current_index == i);
+        if (!valid_backpointer) {
+            return false;
+        }
+    }
+    
+    return true;
+}
+        
 bool aws_priority_queue_is_valid(const struct aws_priority_queue *const queue) {
     
     /* Pointer validity checks */
@@ -198,14 +219,10 @@ bool aws_priority_queue_is_valid(const struct aws_priority_queue *const queue) {
     /* Internal container validity checks */
     bool container_is_valid = aws_array_list_is_valid(&queue->container);
     bool backpointers_is_valid = aws_array_list_is_valid(&queue->backpointers);
-
-    /* Semantic validity checks */
-    bool priority_queue_item_ordering = true; // TODO: Fill
     bool backpointer_validity = s_backpointers_are_valid(&queue->backpointers);
     return pred_is_valid
         && container_is_valid
         && backpointers_is_valid
-        && priority_queue_item_ordering
         && backpointer_validity;
 }
 
