@@ -22,6 +22,8 @@
 #define RIGHT_OF(index) (((index) << 1) + 2)
 
 void s_swap(struct aws_priority_queue *queue, size_t a, size_t b) {
+    AWS_PRECONDITION(aws_priority_queue_is_valid(queue));
+    /* AWS_PRECONDITION(aws_priority_queue_is_valid(queue), "Input priority_queue [queue] must be valid."); */
     aws_array_list_swap(&queue->container, a, b);
 
     /* Invariant: If the backpointer array is initialized, we have enough room for all elements */
@@ -44,6 +46,7 @@ void s_swap(struct aws_priority_queue *queue, size_t a, size_t b) {
             (*bp_b)->current_index = b;
         }
     }
+    AWS_POSTCONDITION(aws_priority_queue_is_valid(queue));
 }
 
 /* Precondition: with the exception of the given root element, the container must be
@@ -188,7 +191,7 @@ static bool s_priority_queue_is_ordered(const struct aws_array_list *AWS_RESTRIC
 }
 
 // TODO: CBMC Macro
-static bool s_backpointers_are_valid(const struct aws_array_list *AWS_RESTRICT backpointers) {
+static bool s_backpointers_are_valid_loop(const struct aws_array_list *AWS_RESTRICT backpointers) {
     /* Assuming that backpointers has passed the aws_array_list_is_valid check */
 
     size_t i;
@@ -207,7 +210,28 @@ static bool s_backpointers_are_valid(const struct aws_array_list *AWS_RESTRICT b
     
     return true;
 }
-        
+
+static bool s_backpointers_are_valid_cbmc(const struct aws_array_list *AWS_RESTRICT backpointers) {
+    /* Assuming that backpointers has passed the aws_array_list_is_valid check */
+
+    size_t i;
+    size_t len = aws_array_list_length(backpointers);
+    struct aws_priority_queue_node *backpointer = NULL;
+
+    /* Question: Could this create any problem when used as a
+       precondition in CBMC (because of the loop)? */
+    
+    for (i=0; i < len; i++) {
+        aws_array_list_get_at(backpointers, &backpointer, i);
+        bool valid_backpointer = (!backpointer) || (backpointer->current_index == i);
+        if (!valid_backpointer) {
+            return false;
+        }
+    }
+    
+    return true;
+}
+
 bool aws_priority_queue_is_valid(const struct aws_priority_queue *const queue) {
     
     /* Pointer validity checks */
@@ -218,12 +242,15 @@ bool aws_priority_queue_is_valid(const struct aws_priority_queue *const queue) {
 
     /* Internal container validity checks */
     bool container_is_valid = aws_array_list_is_valid(&queue->container);
-    bool backpointers_is_valid = aws_array_list_is_valid(&queue->backpointers);
-    bool backpointer_validity = s_backpointers_are_valid(&queue->backpointers);
+    bool backpointer_list_is_valid = aws_array_list_is_valid(&queue->backpointers);
+
+    /* bool backpointer_validity = s_backpointers_are_valid(&queue->backpointers); */
     return pred_is_valid
         && container_is_valid
-        && backpointers_is_valid
-        && backpointer_validity;
+        && backpointer_list_is_valid
+        /* TODO: Move this as a condition above too. Is is possible? */
+        && (&queue->backpointers.length == &queue->container.length);
+        /* && backpointer_validity; */
 }
 
 void aws_priority_queue_clean_up(struct aws_priority_queue *queue) {

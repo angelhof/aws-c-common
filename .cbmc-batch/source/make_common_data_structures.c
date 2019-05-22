@@ -71,6 +71,14 @@ bool aws_priority_queue_is_bounded(
     return container_is_bounded && backpointers_is_bounded;
 }
 
+/* This function should check whether every backpointer cell of a
+ * backpointer array list is either null or whether it points to an
+ * allocated backpointer object, that has the same index as it does.
+ */
+/* void ensure_backpointer_objects_allocated() { */
+
+/* } */
+
 void ensure_priority_queue_has_allocated_members(struct aws_priority_queue *const queue) {
     ensure_array_list_has_allocated_data_member(&queue->container);
     ensure_array_list_has_allocated_data_member(&queue->backpointers);
