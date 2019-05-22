@@ -28,6 +28,11 @@ void s_swap(struct aws_priority_queue *queue, size_t a, size_t b) {
 
     /* Invariant: If the backpointer array is initialized, we have enough room for all elements */
     if (queue->backpointers.data) {
+        /* These two assertions can be moved to the precondition by
+         * making sure that a and b are less than the length of the
+         * container. Because the container has the same length with
+         * backpointers if the queue is valid, we can be sure that
+         * they are also smaller than the backpointers length */
         AWS_ASSERT(queue->backpointers.length > a);
         AWS_ASSERT(queue->backpointers.length > b);
 
@@ -244,12 +249,15 @@ bool aws_priority_queue_is_valid(const struct aws_priority_queue *const queue) {
     bool container_is_valid = aws_array_list_is_valid(&queue->container);
     bool backpointer_list_is_valid = aws_array_list_is_valid(&queue->backpointers);
 
+    /* The length check doesn't make sense if the array_lists are not valid */
+    bool lists_equal_length = (container_is_valid && backpointer_list_is_valid)
+        ? (&queue->backpointers.length == &queue->container.length) : true;
+    
     /* bool backpointer_validity = s_backpointers_are_valid(&queue->backpointers); */
     return pred_is_valid
         && container_is_valid
         && backpointer_list_is_valid
-        /* TODO: Move this as a condition above too. Is is possible? */
-        && (&queue->backpointers.length == &queue->container.length);
+        && lists_equal_length;
         /* && backpointer_validity; */
 }
 
