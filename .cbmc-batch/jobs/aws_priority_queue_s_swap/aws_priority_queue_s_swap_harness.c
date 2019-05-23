@@ -24,36 +24,26 @@ void aws_priority_queue_s_swap_harness() {
     struct aws_priority_queue queue;
 
     /* assumptions */
-
-    /* Question: Is bounding by item size and initial item allocation necessary? */
-    /* I think that if I increase this it takes much more time. I am not sure though */
     __CPROVER_assume(aws_priority_queue_is_bounded(&queue, MAX_INITIAL_ITEM_ALLOCATION, MAX_ITEM_SIZE));
-    
     ensure_priority_queue_has_allocated_members(&queue);
 
-    /* Assuming the function preconditions */
+    /* Assume the function preconditions */
     __CPROVER_assume(aws_priority_queue_is_valid(&queue));
 
     /* perform operation under verification */
-
-    /* I probably have to constrain them to be less than the size of the queue */
     size_t a;
     size_t b;
-
     __CPROVER_assume(a < queue.container.length);
     __CPROVER_assume(b < queue.container.length);
     
-    /* This assumes that the two backpointers a, b are valid, either
-     * by being NULL or by allocating their objects with their correct
+    /* Assume that the two backpointers a, b are valid, either by
+     * being NULL or by allocating their objects with their correct
      * values. */
     ensure_backpointer_cell_points_to_allocated(&(queue.backpointers), a);
     ensure_backpointer_cell_points_to_allocated(&(queue.backpointers), b);
 
     s_swap(&queue, a, b);
-
-    /* assertions */
+    
     /* This is asserted as a postcondition */
     /* assert(aws_priority_queue_is_valid(&queue)); */
-    /* assert_array_list_equivalence(&queue.container, &old_container, &old_byte_container); */
-    /* assert_array_list_equivalence(&queue.backpointers, &old_backpointers, &old_byte_backpointers); */
 }

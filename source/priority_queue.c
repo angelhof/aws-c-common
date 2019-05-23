@@ -176,67 +176,67 @@ void aws_priority_queue_init_static(
 }
 
 /* Question: What is a better name for that? */
-static bool s_priority_queue_is_ordered(const struct aws_array_list *AWS_RESTRICT backpointers) {
-    /* Assuming that backpointers has passed the aws_array_list_is_valid check */
+/* static bool s_priority_queue_is_ordered(const struct aws_array_list *AWS_RESTRICT backpointers) { */
+/*     /\* Assuming that backpointers has passed the aws_array_list_is_valid check *\/ */
 
-    size_t i;
-    size_t len = aws_array_list_length(backpointers);
-    struct aws_priority_queue_node *backpointer = NULL;
+/*     size_t i; */
+/*     size_t len = aws_array_list_length(backpointers); */
+/*     struct aws_priority_queue_node *backpointer = NULL; */
 
-    /* Question: Could this create any problem when used as a
-       precondition in CBMC (because of the loop)? */
-    for (i=0; i < len; i++) {
-        aws_array_list_get_at(backpointers, &backpointer, i);
-        bool valid_backpointer = (!backpointer) || (backpointer->current_index == i);
-        if (!valid_backpointer) {
-            return false;
-        }
-    }
+/*     /\* Question: Could this create any problem when used as a */
+/*        precondition in CBMC (because of the loop)? *\/ */
+/*     for (i=0; i < len; i++) { */
+/*         aws_array_list_get_at(backpointers, &backpointer, i); */
+/*         bool valid_backpointer = (!backpointer) || (backpointer->current_index == i); */
+/*         if (!valid_backpointer) { */
+/*             return false; */
+/*         } */
+/*     } */
     
-    return true;
-}
+/*     return true; */
+/* } */
 
 // TODO: CBMC Macro
-static bool s_backpointers_are_valid_loop(const struct aws_array_list *AWS_RESTRICT backpointers) {
-    /* Assuming that backpointers has passed the aws_array_list_is_valid check */
+/* static bool s_backpointers_are_valid_loop(const struct aws_array_list *AWS_RESTRICT backpointers) { */
+/*     /\* Assuming that backpointers has passed the aws_array_list_is_valid check *\/ */
 
-    size_t i;
-    size_t len = aws_array_list_length(backpointers);
-    struct aws_priority_queue_node *backpointer = NULL;
+/*     size_t i; */
+/*     size_t len = aws_array_list_length(backpointers); */
+/*     struct aws_priority_queue_node *backpointer = NULL; */
 
-    /* Question: Could this create any problem when used as a
-       precondition in CBMC (because of the loop)? */
-    for (i=0; i < len; i++) {
-        aws_array_list_get_at(backpointers, &backpointer, i);
-        bool valid_backpointer = (!backpointer) || (backpointer->current_index == i);
-        if (!valid_backpointer) {
-            return false;
-        }
-    }
+/*     /\* Question: Could this create any problem when used as a */
+/*        precondition in CBMC (because of the loop)? *\/ */
+/*     for (i=0; i < len; i++) { */
+/*         aws_array_list_get_at(backpointers, &backpointer, i); */
+/*         bool valid_backpointer = (!backpointer) || (backpointer->current_index == i); */
+/*         if (!valid_backpointer) { */
+/*             return false; */
+/*         } */
+/*     } */
     
-    return true;
-}
+/*     return true; */
+/* } */
 
-static bool s_backpointers_are_valid_cbmc(const struct aws_array_list *AWS_RESTRICT backpointers) {
-    /* Assuming that backpointers has passed the aws_array_list_is_valid check */
+/* static bool s_backpointers_are_valid_cbmc(const struct aws_array_list *AWS_RESTRICT backpointers) { */
+/*     /\* Assuming that backpointers has passed the aws_array_list_is_valid check *\/ */
 
-    size_t i;
-    size_t len = aws_array_list_length(backpointers);
-    struct aws_priority_queue_node *backpointer = NULL;
+/*     size_t i; */
+/*     size_t len = aws_array_list_length(backpointers); */
+/*     struct aws_priority_queue_node *backpointer = NULL; */
 
-    /* Question: Could this create any problem when used as a
-       precondition in CBMC (because of the loop)? */
+/*     /\* Question: Could this create any problem when used as a */
+/*        precondition in CBMC (because of the loop)? *\/ */
     
-    for (i=0; i < len; i++) {
-        aws_array_list_get_at(backpointers, &backpointer, i);
-        bool valid_backpointer = (!backpointer) || (backpointer->current_index == i);
-        if (!valid_backpointer) {
-            return false;
-        }
-    }
+/*     for (i=0; i < len; i++) { */
+/*         aws_array_list_get_at(backpointers, &backpointer, i); */
+/*         bool valid_backpointer = (!backpointer) || (backpointer->current_index == i); */
+/*         if (!valid_backpointer) { */
+/*             return false; */
+/*         } */
+/*     } */
     
-    return true;
-}
+/*     return true; */
+/* } */
 
 bool aws_priority_queue_is_valid(const struct aws_priority_queue *const queue) {
     
@@ -249,19 +249,29 @@ bool aws_priority_queue_is_valid(const struct aws_priority_queue *const queue) {
     /* Internal container validity checks */
     bool container_is_valid = aws_array_list_is_valid(&queue->container);
     bool backpointer_list_is_valid = aws_array_list_is_valid(&queue->backpointers);
-    bool backpointer_list_item_size = queue->backpointers.item_size == sizeof(struct aws_priority_queue_node *);
-    
-    /* The length check doesn't make sense if the array_lists are not valid */
-    bool lists_equal_length = (container_is_valid && backpointer_list_is_valid)
-        ? (queue->backpointers.length == queue->container.length) : true;
+
+    /* Backpointer struct should either be zero or should be
+     * initialized to be the same length as the container, and having
+     * as elements potentially null pointers to
+     * aws_priority_queue_nodes */
+    bool backpointer_list_item_size =
+        queue->backpointers.item_size == sizeof(struct aws_priority_queue_node *);
+    bool lists_equal_lengths = queue->backpointers.length == queue->container.length;
+    bool backpointers_uninitialized =
+        (queue->backpointers.alloc == NULL &&
+         queue->backpointers.current_size == 0 &&
+         queue->backpointers.length == 0 &&
+         queue->backpointers.item_size == 0 &&
+         queue->backpointers.data == NULL);
+    bool backpointer_struct_is_valid =
+        backpointers_uninitialized ||
+        (backpointer_list_item_size && lists_equal_lengths);
     
     /* bool backpointer_validity = s_backpointers_are_valid(&queue->backpointers); */
     return pred_is_valid
         && container_is_valid
         && backpointer_list_is_valid
-        && backpointer_list_item_size
-        && lists_equal_length;
-        /* && backpointer_validity; */
+        && backpointer_struct_is_valid;
 }
 
 void aws_priority_queue_clean_up(struct aws_priority_queue *queue) {
@@ -270,19 +280,17 @@ void aws_priority_queue_clean_up(struct aws_priority_queue *queue) {
      *  precondition on cleanup. We would like to, so I will leave it
      *  here for now.
      */
-    AWS_PRECONDITION(aws_priority_queue_is_valid(queue));
+    /* AWS_PRECONDITION(aws_priority_queue_is_valid(queue)); */
     
     aws_array_list_clean_up(&queue->container);
     aws_array_list_clean_up(&queue->backpointers);
 }
 
 int aws_priority_queue_push(struct aws_priority_queue *queue, void *item) {
-    AWS_PRECONDITION(aws_priority_queue_is_valid(queue));
+    /* AWS_PRECONDITION(aws_priority_queue_is_valid(queue)); */
 
     int ret = aws_priority_queue_push_ref(queue, item, NULL);
-    if (!ret) {
-        AWS_POSTCONDITION(aws_priority_queue_is_valid(queue));
-    }
+    /* AWS_POSTCONDITION(aws_priority_queue_is_valid(queue)); */
     return ret;
 }
 
@@ -290,7 +298,7 @@ int aws_priority_queue_push_ref(
     struct aws_priority_queue *queue,
     void *item,
     struct aws_priority_queue_node *backpointer) {
-    AWS_PRECONDITION(aws_priority_queue_is_valid(queue));
+    /* AWS_PRECONDITION(aws_priority_queue_is_valid(queue)); */
     int err = aws_array_list_push_back(&queue->container, item);
     if (err) {
         return err;
@@ -330,7 +338,7 @@ int aws_priority_queue_push_ref(
 
     s_sift_up(queue, aws_array_list_length(&queue->container) - 1);
 
-    AWS_POSTCONDITION(aws_priority_queue_is_valid(queue));
+    /* AWS_POSTCONDITION(aws_priority_queue_is_valid(queue)); */
     return AWS_OP_SUCCESS;
 
 backpointer_update_failed:
@@ -371,54 +379,48 @@ int aws_priority_queue_remove(
     struct aws_priority_queue *queue,
     void *item,
     const struct aws_priority_queue_node *node) {
-    AWS_PRECONDITION(aws_priority_queue_is_valid(queue));
+    /* AWS_PRECONDITION(aws_priority_queue_is_valid(queue)); */
     if (node->current_index >= aws_array_list_length(&queue->container) || !queue->backpointers.data) {
         return aws_raise_error(AWS_ERROR_PRIORITY_QUEUE_BAD_NODE);
     }
 
     int ret = s_remove_node(queue, item, node->current_index);
-    if (!ret) {
-        AWS_POSTCONDITION(aws_priority_queue_is_valid(queue));
-    }
+    /* AWS_POSTCONDITION(aws_priority_queue_is_valid(queue)); */
     return ret;
 }
 
 int aws_priority_queue_pop(struct aws_priority_queue *queue, void *item) {
-    AWS_PRECONDITION(aws_priority_queue_is_valid(queue));
+    /* AWS_PRECONDITION(aws_priority_queue_is_valid(queue)); */
     if (0 == aws_array_list_length(&queue->container)) {
         return aws_raise_error(AWS_ERROR_PRIORITY_QUEUE_EMPTY);
     }
 
     int ret = s_remove_node(queue, item, 0);
-    if (!ret) {
-        AWS_POSTCONDITION(aws_priority_queue_is_valid(queue));
-    }
+    /* AWS_POSTCONDITION(aws_priority_queue_is_valid(queue)); */
     return ret;
 }
 
 int aws_priority_queue_top(const struct aws_priority_queue *queue, void **item) {
-    AWS_PRECONDITION(aws_priority_queue_is_valid(queue));
+    /* AWS_PRECONDITION(aws_priority_queue_is_valid(queue)); */
     if (0 == aws_array_list_length(&queue->container)) {
         return aws_raise_error(AWS_ERROR_PRIORITY_QUEUE_EMPTY);
     }
 
     int ret = aws_array_list_get_at_ptr(&queue->container, item, 0);
-    if (!ret) {
-        AWS_POSTCONDITION(aws_priority_queue_is_valid(queue));
-    }
+    /* AWS_POSTCONDITION(aws_priority_queue_is_valid(queue)); */
     return ret;
 }
 
 size_t aws_priority_queue_size(const struct aws_priority_queue *queue) {
-    AWS_PRECONDITION(aws_priority_queue_is_valid(queue));
+    /* AWS_PRECONDITION(aws_priority_queue_is_valid(queue)); */
     size_t ret = aws_array_list_length(&queue->container);
-    AWS_POSTCONDITION(aws_priority_queue_is_valid(queue));
+    /* AWS_POSTCONDITION(aws_priority_queue_is_valid(queue)); */
     return ret;
 }
 
 size_t aws_priority_queue_capacity(const struct aws_priority_queue *queue) {
-    AWS_PRECONDITION(aws_priority_queue_is_valid(queue));
+    /* AWS_PRECONDITION(aws_priority_queue_is_valid(queue)); */
     size_t ret = aws_array_list_capacity(&queue->container);
-    AWS_POSTCONDITION(aws_priority_queue_is_valid(queue));
+    /* AWS_POSTCONDITION(aws_priority_queue_is_valid(queue)); */
     return ret;
 }
