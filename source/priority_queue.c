@@ -251,7 +251,7 @@ bool aws_priority_queue_is_valid(const struct aws_priority_queue *const queue) {
 
     /* The length check doesn't make sense if the array_lists are not valid */
     bool lists_equal_length = (container_is_valid && backpointer_list_is_valid)
-        ? (&queue->backpointers.length == &queue->container.length) : true;
+        ? (queue->backpointers.length == queue->container.length) : true;
     
     /* bool backpointer_validity = s_backpointers_are_valid(&queue->backpointers); */
     return pred_is_valid

@@ -81,9 +81,7 @@ bool aws_priority_queue_is_bounded(
 /*
  * Ensures that a cell of the backpointer array is NULL or points to an allocated object.
  */
-void ensure_backpointer_cell_points_to_allocated(
-    struct aws_array_list *const backpointers,
-    size_t index);
+void ensure_backpointer_cell_points_to_allocated(struct aws_array_list *const backpointers, const size_t index);
 
 /**
  * Ensures members of an aws_priority_queue structure are correctly allocated
