@@ -17,7 +17,7 @@
 #include <proof_helpers/make_common_data_structures.h>
 
 /**
- * Runtime: 21s
+ * Runtime: 
  */
 void aws_priority_queue_s_swap_harness() {
     /* data structure */
@@ -26,11 +26,13 @@ void aws_priority_queue_s_swap_harness() {
     /* assumptions */
 
     /* Question: Is bounding by item size and initial item allocation necessary? */
-    __CPROVER_assume(aws_priority_queue_is_bounded(&queue, MAX_INITIAL_ITEM_ALLOCATION, MAX_ITEM_SIZE));
+    /* I think that if I increase this it takes much more time. I am not sure though */
+    __CPROVER_assume(aws_priority_queue_is_bounded(&queue, 100, MAX_ITEM_SIZE));
 
     /* malloc */
     ensure_priority_queue_has_allocated_members(&queue);
 
+    /* Assuming the function preconditions */
     __CPROVER_assume(aws_priority_queue_is_valid(&queue));
 
     /* perform operation under verification */
@@ -44,30 +46,17 @@ void aws_priority_queue_s_swap_harness() {
 
     /* If we pass from the above assumes we know that length is not
      * zero (Is that true?). */
-
+    
     /* TODO: We want to assume that the two backpointers a, b are
      * valid, either by being NULL or by allocating their objects with
-     * their correct values.
-     */
-    /* There seems to be some over-assumption here as the assert(0) below doesnt fail*/
+     * their correct values. */
     ensure_backpointer_cell_points_to_allocated(&(queue.backpointers), a);
     ensure_backpointer_cell_points_to_allocated(&(queue.backpointers), b);
-
-    // assert(0);
-    /* TODO: Abstract this away in a function */
-    /* size_t i; */
-    /* size_t len = queue.backpointers.length; */
-    /* __CPROVER_assume(i < len); */
-    /* struct aws_priority_queue_node *backpointer = ((struct aws_priority_queue_node **) queue.backpointers.data)[i];
-     */
-    /* /\* aws_array_list_get_at(&(queue.backpointers), &backpointer, i); *\/ */
-    /* /\* TODO: I have to correctly malloc the backpointer structure *\/ */
-    /* __CPROVER_assume((!backpointer) || (backpointer->current_index == i)); */
 
     s_swap(&queue, a, b);
 
     /* assertions */
-
+    /* assert(0); */
     /* This is asserted as a postcondition */
     /* assert(aws_priority_queue_is_valid(&queue)); */
     /* assert_array_list_equivalence(&queue.container, &old_container, &old_byte_container); */

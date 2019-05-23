@@ -24,8 +24,9 @@
 void s_swap(struct aws_priority_queue *queue, size_t a, size_t b) {
     AWS_PRECONDITION(aws_priority_queue_is_valid(queue));
     /* AWS_PRECONDITION(aws_priority_queue_is_valid(queue), "Input priority_queue [queue] must be valid."); */
-    aws_array_list_swap(&queue->container, a, b);
 
+    aws_array_list_swap(&queue->container, a, b);
+    
     /* Invariant: If the backpointer array is initialized, we have enough room for all elements */
     if (queue->backpointers.data) {
         /* These two assertions can be moved to the precondition by
@@ -38,11 +39,11 @@ void s_swap(struct aws_priority_queue *queue, size_t a, size_t b) {
 
         struct aws_priority_queue_node **bp_a = &((struct aws_priority_queue_node **)queue->backpointers.data)[a];
         struct aws_priority_queue_node **bp_b = &((struct aws_priority_queue_node **)queue->backpointers.data)[b];
-
+        
         struct aws_priority_queue_node *tmp = *bp_a;
         *bp_a = *bp_b;
         *bp_b = tmp;
-
+        
         if (*bp_a) {
             (*bp_a)->current_index = a;
         }
@@ -248,7 +249,8 @@ bool aws_priority_queue_is_valid(const struct aws_priority_queue *const queue) {
     /* Internal container validity checks */
     bool container_is_valid = aws_array_list_is_valid(&queue->container);
     bool backpointer_list_is_valid = aws_array_list_is_valid(&queue->backpointers);
-
+    bool backpointer_list_item_size = queue->backpointers.item_size == sizeof(struct aws_priority_queue_node *);
+    
     /* The length check doesn't make sense if the array_lists are not valid */
     bool lists_equal_length = (container_is_valid && backpointer_list_is_valid)
         ? (queue->backpointers.length == queue->container.length) : true;
@@ -257,6 +259,7 @@ bool aws_priority_queue_is_valid(const struct aws_priority_queue *const queue) {
     return pred_is_valid
         && container_is_valid
         && backpointer_list_is_valid
+        && backpointer_list_item_size
         && lists_equal_length;
         /* && backpointer_validity; */
 }
