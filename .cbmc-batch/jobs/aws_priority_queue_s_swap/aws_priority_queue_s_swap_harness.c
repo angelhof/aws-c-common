@@ -17,7 +17,7 @@
 #include <proof_helpers/make_common_data_structures.h>
 
 /**
- * Runtime: 
+ * Runtime: 70s
  */
 void aws_priority_queue_s_swap_harness() {
     /* data structure */
@@ -27,9 +27,8 @@ void aws_priority_queue_s_swap_harness() {
 
     /* Question: Is bounding by item size and initial item allocation necessary? */
     /* I think that if I increase this it takes much more time. I am not sure though */
-    __CPROVER_assume(aws_priority_queue_is_bounded(&queue, 100, MAX_ITEM_SIZE));
+    __CPROVER_assume(aws_priority_queue_is_bounded(&queue, 10, MAX_ITEM_SIZE));
 
-    /* malloc */
     ensure_priority_queue_has_allocated_members(&queue);
 
     /* Assuming the function preconditions */
@@ -43,20 +42,16 @@ void aws_priority_queue_s_swap_harness() {
 
     __CPROVER_assume(a < queue.container.length);
     __CPROVER_assume(b < queue.container.length);
-
-    /* If we pass from the above assumes we know that length is not
-     * zero (Is that true?). */
     
-    /* TODO: We want to assume that the two backpointers a, b are
-     * valid, either by being NULL or by allocating their objects with
-     * their correct values. */
+    /* This assumes that the two backpointers a, b are valid, either
+     * by being NULL or by allocating their objects with their correct
+     * values. */
     ensure_backpointer_cell_points_to_allocated(&(queue.backpointers), a);
     ensure_backpointer_cell_points_to_allocated(&(queue.backpointers), b);
 
     s_swap(&queue, a, b);
 
     /* assertions */
-    /* assert(0); */
     /* This is asserted as a postcondition */
     /* assert(aws_priority_queue_is_valid(&queue)); */
     /* assert_array_list_equivalence(&queue.container, &old_container, &old_byte_container); */

@@ -86,17 +86,18 @@ bool aws_priority_queue_is_bounded(
 /* } */
 
 void ensure_backpointer_cell_points_to_allocated(struct aws_array_list *const backpointers, const size_t index) {
+    /* I am not sure whether this assumption is needed here */
     __CPROVER_assume(index < backpointers->length);
 
+    struct aws_priority_queue_node **backpointer =
+        (uint8_t *)backpointers->data + (backpointers->item_size * index);
+    
     if (nondet_bool()) {
-        memset((uint8_t *)backpointers->data + (backpointers->item_size * index), 0, backpointers->item_size);
+        *backpointer = NULL;
     } else {
         struct aws_priority_queue_node *node = malloc(sizeof(struct aws_priority_queue_node));
         __CPROVER_assume(node->current_index == index);
-
-        memset((uint8_t *)backpointers->data + (backpointers->item_size * index),
-               node,
-               backpointers->item_size);
+        *backpointer = node;
     }
 }
 

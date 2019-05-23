@@ -16,7 +16,6 @@ include ../Makefile.aws_array_list
 
 # This is the minimum bound to reach full coverage rate
 UNWINDSET += memcpy_impl.0:10 
-UNWINDSET += memset_impl.0:10 
 UNWINDSET += aws_array_list_mem_swap.0:1
 
 CBMCFLAGS +=
@@ -26,7 +25,6 @@ DEPENDENCIES += $(HELPERDIR)/source/make_common_data_structures.c
 DEPENDENCIES += $(HELPERDIR)/source/utils.c
 DEPENDENCIES += $(HELPERDIR)/stubs/error.c
 DEPENDENCIES += $(HELPERDIR)/stubs/memcpy_override.c
-DEPENDENCIES += $(HELPERDIR)/stubs/memset_override.c
 DEPENDENCIES += $(SRCDIR)/source/array_list.c
 DEPENDENCIES += $(SRCDIR)/source/priority_queue.c
 DEPENDENCIES += $(SRCDIR)/source/common.c
