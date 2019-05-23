@@ -17,7 +17,7 @@
 #include <proof_helpers/make_common_data_structures.h>
 
 /**
- * Runtime: 70s
+ * Runtime: 180s
  */
 void aws_priority_queue_s_swap_harness() {
     /* data structure */
@@ -27,8 +27,8 @@ void aws_priority_queue_s_swap_harness() {
 
     /* Question: Is bounding by item size and initial item allocation necessary? */
     /* I think that if I increase this it takes much more time. I am not sure though */
-    __CPROVER_assume(aws_priority_queue_is_bounded(&queue, 10, MAX_ITEM_SIZE));
-
+    __CPROVER_assume(aws_priority_queue_is_bounded(&queue, MAX_INITIAL_ITEM_ALLOCATION, MAX_ITEM_SIZE));
+    
     ensure_priority_queue_has_allocated_members(&queue);
 
     /* Assuming the function preconditions */
