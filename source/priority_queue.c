@@ -21,7 +21,7 @@
 #define LEFT_OF(index) (((index) << 1) + 1)
 #define RIGHT_OF(index) (((index) << 1) + 2)
 
-void s_swap(struct aws_priority_queue *queue, size_t a, size_t b) {
+static void s_swap(struct aws_priority_queue *queue, size_t a, size_t b) {
     AWS_PRECONDITION(aws_priority_queue_is_valid(queue));
     /* AWS_PRECONDITION(aws_priority_queue_is_valid(queue), "Input priority_queue [queue] must be valid."); */
 

@@ -79,7 +79,8 @@ bool aws_priority_queue_is_bounded(
     const size_t max_item_size);
 
 /*
- * Ensures that a cell of the backpointer array is NULL or points to an allocated object.
+ * Ensures that a cell of the backpointer array is NULL or points to
+ * an allocated [aws_priority_queue_object].
  */
 void ensure_backpointer_cell_points_to_allocated(struct aws_array_list *const backpointers, const size_t index);
 

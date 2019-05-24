@@ -15,9 +15,7 @@
 include ../Makefile.aws_array_list
 
 # This is the minimum bound to reach full coverage rate
-# QUESTION: Should this unwind be as the aws_array_list_swap harness Makefile is?
-#           Or should it have to do with the backpointer array item size too?
-UNWINDSET += aws_array_list_mem_swap.0:1
+UNWINDSET += __CPROVER_file_local_array_list_c_aws_array_list_mem_swap.0:$(shell echo $$(($(MAX_ITEM_SIZE) + 1)))
 
 CBMCFLAGS +=
 

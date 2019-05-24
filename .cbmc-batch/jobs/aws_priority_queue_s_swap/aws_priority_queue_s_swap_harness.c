@@ -20,17 +20,17 @@
  * Runtime: 180s
  */
 void aws_priority_queue_s_swap_harness() {
-    /* data structure */
+    /* Data structure */
     struct aws_priority_queue queue;
 
-    /* assumptions */
+    /* Assumptions */
     __CPROVER_assume(aws_priority_queue_is_bounded(&queue, MAX_INITIAL_ITEM_ALLOCATION, MAX_ITEM_SIZE));
     ensure_priority_queue_has_allocated_members(&queue);
 
     /* Assume the function preconditions */
     __CPROVER_assume(aws_priority_queue_is_valid(&queue));
 
-    /* perform operation under verification */
+    /* Perform operation under verification */
     size_t a;
     size_t b;
     __CPROVER_assume(a < queue.container.length);
@@ -44,6 +44,6 @@ void aws_priority_queue_s_swap_harness() {
 
     s_swap(&queue, a, b);
     
-    /* This is asserted as a postcondition */
-    /* assert(aws_priority_queue_is_valid(&queue)); */
+    /* Assert the postconditions */
+    assert(aws_priority_queue_is_valid(&queue));
 }
