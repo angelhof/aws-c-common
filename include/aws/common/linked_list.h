@@ -84,6 +84,7 @@ AWS_STATIC_IMPL bool aws_linked_list_is_correct(const struct aws_linked_list *li
     while (temp->next) {
         if (temp->next == &list->tail) {
             head_reaches_tail = true;
+            break;
         }
         temp = temp->next;
     }
@@ -94,6 +95,7 @@ AWS_STATIC_IMPL bool aws_linked_list_is_correct(const struct aws_linked_list *li
     while (temp->prev) {
         if (temp->prev == &list->head) {
             tail_reaches_head = true;
+            break;
         }
         temp = temp->prev;
     }
@@ -104,6 +106,7 @@ AWS_STATIC_IMPL bool aws_linked_list_is_correct(const struct aws_linked_list *li
     while (temp != &list->tail) {
         if (!aws_linked_list_node_next_is_valid(temp)) {
             are_next_links_valid = false;
+            break;
         }
         temp = temp->next;
     }
@@ -111,11 +114,16 @@ AWS_STATIC_IMPL bool aws_linked_list_is_correct(const struct aws_linked_list *li
     /* The prev links must be valid for all nodes (except head) */
     temp = &list->tail;
     bool are_prev_links_valid = true;
+    struct aws_linked_list_node *debug_head = &list->head;
+    struct aws_linked_list_node *debug_tail = &list->tail;
     while (temp != &list->head) {
         if (!aws_linked_list_node_prev_is_valid(temp)) {
             are_prev_links_valid = false;
+            break;
         }
+        debug_head = &list->head;
         temp = temp->prev;
+        debug_head = &list->head;
     }
     return head_reaches_tail && tail_reaches_head && are_next_links_valid && are_prev_links_valid;
     /* return true; */
@@ -198,10 +206,15 @@ AWS_STATIC_IMPL struct aws_linked_list_node *aws_linked_list_prev(const struct a
 AWS_STATIC_IMPL void aws_linked_list_insert_after(
     struct aws_linked_list_node *after,
     struct aws_linked_list_node *to_add) {
+    AWS_PRECONDITION(aws_linked_list_node_next_is_valid(after));
+    AWS_PRECONDITION(to_add);
     to_add->prev = after;
     to_add->next = after->next;
     after->next->prev = to_add;
     after->next = to_add;
+    AWS_POSTCONDITION(aws_linked_list_node_next_is_valid(after));
+    AWS_POSTCONDITION(aws_linked_list_node_prev_is_valid(to_add));
+    AWS_POSTCONDITION(aws_linked_list_node_next_is_valid(to_add));
 }
 
 /**
