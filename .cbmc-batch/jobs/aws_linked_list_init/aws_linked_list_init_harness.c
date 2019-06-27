@@ -20,6 +20,7 @@ void aws_linked_list_init_harness() {
     /* data structure */
     struct aws_linked_list list;
 
+    /* Note: function has a precondition that list is not NULL */ 
     /* perform operation under verification */
     aws_linked_list_init(&list);
 

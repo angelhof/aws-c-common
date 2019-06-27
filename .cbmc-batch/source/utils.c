@@ -101,6 +101,51 @@ void assert_byte_cursor_equivalence(
     }
 }
 
+void assert_linked_list_equivalence(const struct aws_linked_list *const lhs_list,
+                                    struct aws_linked_list_node** rhs_nodes,
+                                    size_t rhs_length) {
+    assert(lhs_list);
+    if(rhs_length > 0) {
+        assert(rhs_nodes);
+    }
+    
+    struct aws_linked_list_node **lhs_nodes;
+    size_t lhs_length;
+    copy_linked_list_nodes(lhs_list, &lhs_nodes, &lhs_length);
+
+    assert(lhs_length == rhs_length);
+    assert_bytes_match(lhs_nodes, rhs_nodes, lhs_length * sizeof(struct aws_linked_list_node *));
+}
+
+void copy_linked_list_nodes(const struct aws_linked_list *const list,
+                            struct aws_linked_list_node *** nodes,
+                            size_t* length) {
+    assert(length);
+    /* The list must be connected and birdirectional, otherwise
+     * copying the nodes doesn't make sense. */
+    assert(aws_linked_list_is_valid(list));
+
+    /* Find the length of the list */
+    size_t temp_length = 0;
+    struct aws_linked_list_node *temp = &list->head.next;
+    while(temp != &list->tail) {
+        temp_length++;
+        temp = temp->next;
+    }
+    *length = temp_length;
+    
+    /* Allocate an array with pointers to all nodes and fill it */
+    struct aws_linked_list_node ** temp_nodes = malloc(temp_length * sizeof(struct aws_linked_list_node*));
+    temp_length = 0;
+    temp = &list->head.next;
+    while(temp != &list->tail) {
+        temp_nodes[temp_length++] = temp;
+        temp = temp->next;
+    }
+    /* *nodes = temp_nodes; */
+}
+                                    
+
 void save_byte_from_hash_table(const struct aws_hash_table *map, struct store_byte_from_buffer *storage) {
     struct hash_table_state *state = map->p_impl;
     size_t size_in_bytes;

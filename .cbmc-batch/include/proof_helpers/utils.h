@@ -17,6 +17,7 @@
 
 #include <aws/common/array_list.h>
 #include <aws/common/byte_buf.h>
+#include <aws/common/linked_list.h>
 #include <proof_helpers/nondet.h>
 #include <proof_helpers/proof_allocators.h>
 #include <stddef.h>
@@ -94,6 +95,23 @@ void assert_byte_buf_equivalence(
  */
 void save_byte_from_hash_table(const struct aws_hash_table *map, struct store_byte_from_buffer *storage);
 
+/**
+ * Asserts that two linked lists (the right of which has been copied
+ * to an array using [copy_linked_list_nodes]) have the same length
+ * and the same nodes.
+ */
+void assert_linked_list_equivalence(const struct aws_linked_list *const lhs_list,
+                                    struct aws_linked_list_node** rhs_nodes,
+                                    size_t rhs_length);
+
+/**
+ * Copies the addresses of the nodes in the linked list in an array
+ * and returns its length. This can be used to assert the equivalence
+ * of a linked list before and after an operation on it.
+ */
+void copy_linked_list_nodes(const struct aws_linked_list *const list,
+                            struct aws_linked_list_node*** nodes,
+                            size_t* length);
 /**
  * Checks that a no bytes in the hash_table have changed from when "storage" was stored.
  */
