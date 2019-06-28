@@ -16,7 +16,7 @@
 #include <aws/common/priority_queue.h>
 #include <proof_helpers/make_common_data_structures.h>
 
-void __CPROVER_file_local_priority_queue_c_s_sift_either(struct aws_priority_queue *queue, size_t root);
+void s_sift_either(struct aws_priority_queue *queue, size_t root);
 
 void aws_priority_queue_s_sift_either_harness() {
     /* Data structure */
@@ -46,7 +46,7 @@ void aws_priority_queue_s_sift_either_harness() {
     }
 
     /* Perform operation under verification */
-    __CPROVER_file_local_priority_queue_c_s_sift_either(&queue, root);
+    s_sift_either(&queue, root);
 
     /* Assert the postconditions */
     assert(aws_priority_queue_is_valid(&queue));

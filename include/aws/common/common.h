@@ -30,6 +30,8 @@
 #include <stdlib.h> /* for abort() */
 #include <string.h>
 
+#undef __MACH__
+
 AWS_EXTERN_C_BEGIN
 
 /**

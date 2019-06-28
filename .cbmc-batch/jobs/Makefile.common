@@ -160,7 +160,15 @@ $(ENTRY)7.goto: $(ENTRY)6.goto
 	$(GOTO_INSTRUMENT) --slice-global-inits $< $@ \
 		2>&1 | tee $(ENTRY)7.log ; exit $${PIPESTATUS[0]}
 
-$(ENTRY).goto: $(ENTRY)7.goto
+$(ENTRY)-contract.goto: $(ENTRY)7.goto
+	$(GOTO_INSTRUMENT) --apply-code-contracts $< $@ \
+		2>&1 | tee $(ENTRY)-contract.log ; exit $${PIPESTATUS[0]}
+
+$(ENTRY)-dump.c: $(ENTRY)-contract.goto
+	$(GOTO_INSTRUMENT) --dump-c $< $@ \
+		2>&1 | tee $(ENTRY)-contract.log ; exit $${PIPESTATUS[0]}
+
+$(ENTRY).goto: $(ENTRY)-contract.goto
 	cp $< $@
 
 # Catch-all used for building goto-binaries of the individual
@@ -173,7 +181,7 @@ $(ENTRY).goto: $(ENTRY)7.goto
 
 goto: $(ENTRY).goto
 
-cbmc.log: $(ENTRY).goto
+cbmc.log: $(ENTRY).goto $(ENTRY)-dump.c
 	cbmc $(CBMCFLAGS) --trace $< 2>&1 | tee $@
 
 property.xml: $(ENTRY).goto

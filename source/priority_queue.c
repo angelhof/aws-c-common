@@ -57,7 +57,11 @@ static void s_swap(struct aws_priority_queue *queue, size_t a, size_t b) {
 
 /* Precondition: with the exception of the given root element, the container must be
  * in heap order */
-static bool s_sift_down(struct aws_priority_queue *queue, size_t root) {
+bool s_sift_down(struct aws_priority_queue *queue, size_t root)
+    __CPROVER_requires(aws_priority_queue_is_valid(queue) &&
+                       root < queue->container.length)
+    __CPROVER_ensures(aws_priority_queue_is_valid(queue))
+{
     AWS_PRECONDITION(aws_priority_queue_is_valid(queue));
     AWS_PRECONDITION(root < queue->container.length);
 
@@ -104,7 +108,11 @@ static bool s_sift_down(struct aws_priority_queue *queue, size_t root) {
 }
 
 /* Precondition: Elements prior to the specified index must be in heap order. */
-static bool s_sift_up(struct aws_priority_queue *queue, size_t index) {
+bool s_sift_up(struct aws_priority_queue *queue, size_t index)
+    __CPROVER_requires(aws_priority_queue_is_valid(queue) &&
+                       index < queue->container.length)
+    __CPROVER_ensures(aws_priority_queue_is_valid(queue))
+{
     AWS_PRECONDITION(aws_priority_queue_is_valid(queue));
     AWS_PRECONDITION(index < queue->container.length);
 
@@ -141,10 +149,13 @@ static bool s_sift_up(struct aws_priority_queue *queue, size_t index) {
  * Precondition: With the exception of the given index, the heap condition holds for all elements.
  * In particular, the parent of the current index is a predecessor of all children of the current index.
  */
-static void s_sift_either(struct aws_priority_queue *queue, size_t index) {
+void s_sift_either(struct aws_priority_queue *queue, size_t index) {
     AWS_PRECONDITION(aws_priority_queue_is_valid(queue));
     AWS_PRECONDITION(index < queue->container.length);
 
+    bool debug_valid = aws_priority_queue_is_valid(queue);
+    size_t debug_length = queue->container.length;
+    
     if (!index || !s_sift_up(queue, index)) {
         s_sift_down(queue, index);
     }
