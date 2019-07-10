@@ -18,6 +18,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+void __CPROVER_postcondition(bool assertion, const char *description) {
+    __CPROVER_assert(assertion, description);
+}
+
 void aws_fatal_assert(const char *cond_str, const char *file, int line) {
     aws_debug_break();
     fprintf(stderr, "Fatal error condition occurred in %s:%d: %s\nExiting Application\n", file, line, cond_str);

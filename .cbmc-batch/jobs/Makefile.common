@@ -100,7 +100,7 @@ DEPENDENT_GOTOS = $(patsubst %.c,%.goto,$(DEPENDENCIES))
 # sure changes in the headers files will also trigger make,
 # the user must run make clean first.
 $(ENTRY)0.goto: $(ENTRY).c $(DEPENDENT_GOTOS)
-	$(GOTO_CC) $< --export-function-local-symbols $(CBMC_VERBOSITY) \
+	$(GOTO_CC) $< --turn-preconditions-to-contracts --export-function-local-symbols $(CBMC_VERBOSITY) \
 	  --function $(ENTRY) $(DEPENDENT_GOTOS) $(INC) $(DEFINES) -o $@ \
 	  2>&1 | tee $(ENTRY)1.log ; exit $${PIPESTATUS[0]}
 
@@ -161,7 +161,7 @@ $(ENTRY)7.goto: $(ENTRY)6.goto
 		2>&1 | tee $(ENTRY)7.log ; exit $${PIPESTATUS[0]}
 
 $(ENTRY)-contract.goto: $(ENTRY)7.goto
-	$(GOTO_INSTRUMENT) --apply-code-contracts $< $@ \
+	$(GOTO_INSTRUMENT) --create-function-stub aws_priority_queue_init_static $< $@ \
 		2>&1 | tee $(ENTRY)-contract.log ; exit $${PIPESTATUS[0]}
 
 $(ENTRY)-dump.c: $(ENTRY)-contract.goto
@@ -174,7 +174,7 @@ $(ENTRY).goto: $(ENTRY)-contract.goto
 # Catch-all used for building goto-binaries of the individual
 # dependencies, which are then linked in the $(ENTRY)0.goto rule above
 %.goto: %.c
-	$(GOTO_CC) -c $< --export-function-local-symbols $(CBMC_VERBOSITY) \
+	$(GOTO_CC) -c $< --turn-preconditions-to-contracts --export-function-local-symbols $(CBMC_VERBOSITY) \
 	  $(INC) $(DEFINES) -o $@ \
 	  2>&1 | tee $(dir $<)/$(notdir $<).log ; exit $${PIPESTATUS[0]}
 

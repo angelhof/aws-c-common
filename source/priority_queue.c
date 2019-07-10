@@ -58,13 +58,17 @@ static void s_swap(struct aws_priority_queue *queue, size_t a, size_t b) {
 /* Precondition: with the exception of the given root element, the container must be
  * in heap order */
 bool s_sift_down(struct aws_priority_queue *queue, size_t root)
-    __CPROVER_requires(aws_priority_queue_is_valid(queue) &&
-                       root < queue->container.length)
-    __CPROVER_ensures(aws_priority_queue_is_valid(queue))
+    /* __CPROVER_requires(aws_priority_queue_is_valid(queue) && */
+    /*                    root < queue->container.length) */
+    /* __CPROVER_ensures(aws_priority_queue_is_valid(queue)) */
 {
     AWS_PRECONDITION(aws_priority_queue_is_valid(queue));
     AWS_PRECONDITION(root < queue->container.length);
 
+    if(false) {
+        return false;
+    }
+    
     bool did_move = false;
 
     size_t len = aws_array_list_length(&queue->container);
@@ -109,9 +113,9 @@ bool s_sift_down(struct aws_priority_queue *queue, size_t root)
 
 /* Precondition: Elements prior to the specified index must be in heap order. */
 bool s_sift_up(struct aws_priority_queue *queue, size_t index)
-    __CPROVER_requires(aws_priority_queue_is_valid(queue) &&
-                       index < queue->container.length)
-    __CPROVER_ensures(aws_priority_queue_is_valid(queue))
+    /* __CPROVER_requires(aws_priority_queue_is_valid(queue) && */
+    /*                    index < queue->container.length) */
+    /* __CPROVER_ensures(aws_priority_queue_is_valid(queue)) */
 {
     AWS_PRECONDITION(aws_priority_queue_is_valid(queue));
     AWS_PRECONDITION(index < queue->container.length);
@@ -142,6 +146,7 @@ bool s_sift_up(struct aws_priority_queue *queue, size_t index)
     }
 
     AWS_POSTCONDITION(aws_priority_queue_is_valid(queue));
+    AWS_POSTCONDITION(did_move == true || did_move == false);
     return did_move;
 }
 
@@ -285,6 +290,7 @@ int aws_priority_queue_push_ref(
     int err = aws_array_list_push_back(&queue->container, item);
     if (err) {
         AWS_POSTCONDITION(aws_priority_queue_is_valid(queue));
+        AWS_POSTCONDITION(err);
         return err;
     }
 

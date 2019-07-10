@@ -19,6 +19,7 @@
 #include <aws/common/exports.h>
 #include <aws/common/macros.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 AWS_EXTERN_C_BEGIN
 
@@ -28,6 +29,9 @@ void aws_fatal_assert(const char *cond_str, const char *file, int line) AWS_ATTR
 
 AWS_COMMON_API
 void aws_debug_break(void);
+
+AWS_COMMON_API
+void __CPROVER_postcondition(bool assertion, const char *description);
 
 /**
  * Print a backtrace from either the current stack, or (if provided) the current exception/signal
@@ -82,8 +86,8 @@ AWS_EXTERN_C_END
 #ifdef CBMC
 #    define AWS_PRECONDITION_2(cond, explanation) __CPROVER_precondition((cond), (explanation))
 #    define AWS_PRECONDITION_1(cond) __CPROVER_precondition((cond), #    cond " check failed")
-#    define AWS_POSTCONDITION_2(cond, explanation) __CPROVER_assert((cond), (explanation))
-#    define AWS_POSTCONDITION_1(cond) __CPROVER_assert((cond), #    cond " check failed")
+#    define AWS_POSTCONDITION_2(cond, explanation) __CPROVER_postcondition((cond), (explanation))
+#    define AWS_POSTCONDITION_1(cond) __CPROVER_postcondition((cond), #    cond " check failed")
 #    define AWS_MEM_IS_READABLE(base, len) __CPROVER_r_ok((base), (len))
 #    define AWS_MEM_IS_WRITABLE(base, len) __CPROVER_w_ok((base), (len))
 #else
